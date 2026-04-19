@@ -18,3 +18,6 @@ sdkconfig.bak
 
 # Python env
 .espressif/
+
+# components
+/managed_components/
