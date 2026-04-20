@@ -1,5 +1,15 @@
 idf_component_register(
-    SRCS "main.c" "fizzbuzzpop.c" "countdown.c" "led.c"
-    INCLUDE_DIRS "."
-    REQUIRES led_strip    
+    SRCS 
+        "main.c" 
+        "fizzbuzzpop.c" 
+        "countdown.c" 
+        "led.c" 
+        "light_sensor.c"
+        "bme280.c"
+        "i2c.c"
+    INCLUDE_DIRS 
+        "."
+    REQUIRES 
+        led_strip    
+        driver
 )
