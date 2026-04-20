@@ -7,9 +7,15 @@ idf_component_register(
         "light_sensor.c"
         "bme280.c"
         "i2c.c"
+        "wifi.c"
+        "battery.c"
     INCLUDE_DIRS 
         "."
     REQUIRES 
         led_strip    
         driver
+        esp_wifi
+        esp_driver_i2c
+        esp_adc
+        nvs_flash
 )

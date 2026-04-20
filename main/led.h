@@ -9,6 +9,7 @@ typedef enum {
   LED_STATE_BLINKING_RED,
   LED_STATE_BLINKING_BLUE, 
   LED_STATE_BLINKING_GREEN,
+  LED_STATE_BLINKING_PINK,
 } led_state_t;
 
 extern led_state_t led_state_current;

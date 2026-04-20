@@ -6,57 +6,51 @@
 #include "light_sensor.h"
 #include "i2c.h"
 #include "bme280.h"
+#include "wifi.h"
+#include "battery.h"
 
 void app_main(void)
 {
   printf("Hello world\n");
   
+  //init GPIO handles
   i2c_init();
   i2c_print_devices();  
 
+  //start blinking task (debug)
   light_sensor_init();
   xTaskCreate(led_task, "led_task", 4096, NULL, 5, NULL);
+  led_set_state(LED_STATE_BLINKING_PINK);
+  
+  //init bme and create data structures to mutate
+  bme280_init();
+  bme280_data_t data;
   float lux;
 
-  bme280_init();
+  //init wifi hardware
+  wifi_init();
 
-  bme280_data_t data;
-  
-  bme280_read_values(&data);
+  //init battery GPI0 ADC
+  battery_init();
+  int v;
 
   while(1) {
-
-
+    //read sensor data
     light_sensor_read_lux(&lux);
-    printf("lux: %f\n", lux);
-    printf("changing state to blue\n");
     bme280_read_values(&data);
+
+    //read battery v
+    battery_read(&v);
+
+    //print values
+    printf("battery pin v: %d mV (%.2f V)\n", v, (float)v / 1000.0);
+    printf("lux: %f\n", lux);
     printf("Pressure: %f\n", data.pressure);
     printf("Temperature: %f\n", data.temperature);
     printf("Humidity: %f\n", data.humidity);
-    led_set_state(LED_STATE_BLINKING_BLUE);
-    vTaskDelay(pdMS_TO_TICKS(10000));
-    
 
-    light_sensor_read_lux(&lux);
-    printf("lux: %f\n", lux);
-    printf("changing state to red\n");
-    bme280_read_values(&data);
-    printf("Pressure: %f\n", data.pressure);
-    printf("Temperature: %f\n", data.temperature);
-    printf("Humidity: %f\n", data.humidity);
-    led_set_state(LED_STATE_BLINKING_RED);
-    vTaskDelay(pdMS_TO_TICKS(10000));
 
-    light_sensor_read_lux(&lux);
-    printf("lux: %f\n", lux);
-    printf("changing state to green\n");
-    bme280_read_values(&data);
-    printf("Pressure: %f\n", data.pressure);
-    printf("Temperature: %f\n", data.temperature);
-    printf("Humidity: %f\n", data.humidity);
-    led_set_state(LED_STATE_BLINKING_GREEN);
+    //delay
     vTaskDelay(pdMS_TO_TICKS(10000));
   }
 }
-

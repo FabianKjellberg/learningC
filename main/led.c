@@ -62,6 +62,14 @@ void led_task (void *pvParameters) {
       led_clear(led_strip);
       vTaskDelay(pdMS_TO_TICKS(100));
       break;
+
+    case LED_STATE_BLINKING_PINK:
+      led_strip_set_pixel(led_strip, 0, 100, 0, 50);
+      led_strip_refresh(led_strip);
+      vTaskDelay(pdMS_TO_TICKS(200));
+      led_clear(led_strip);
+      vTaskDelay(pdMS_TO_TICKS(800));
+      break;
     
     case LED_STATE_OFF: 
     default:
