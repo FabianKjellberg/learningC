@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include "countdown.h"
 #include "led.h"
 #include "freertos/FreeRTOS.h"
@@ -29,6 +30,7 @@ void app_main(void)
 
   //init wifi hardware
   wifi_init();
+  wifi_connect();
 
   //init battery GPI0 ADC
   battery_init();
@@ -48,6 +50,8 @@ void app_main(void)
     printf("Pressure: %f\n", data.pressure);
     printf("Temperature: %f\n", data.temperature);
     printf("Humidity: %f\n", data.humidity);
+    test_connection();
+    
 
 
     //delay
