@@ -9,6 +9,8 @@
 #include "bme280.h"
 #include "wifi.h"
 #include "battery.h"
+#include "api.h"
+#include "time_helper.h"
 
 void app_main(void)
 {
@@ -25,8 +27,7 @@ void app_main(void)
   
   //init bme and create data structures to mutate
   bme280_init();
-  bme280_data_t data;
-  float lux;
+  bme280_data_t bme280_data;
 
   //init wifi hardware
   wifi_init();
@@ -34,25 +35,43 @@ void app_main(void)
 
   //init battery GPI0 ADC
   battery_init();
-  int v;
+
+  //init obj
+  sensor_reading_body api_body;
+
+  //set mac adress
+  get_mac_addr(api_body.mac_addr, MAC_ADDR_STR_LEN);
+
+  bool connected;
 
   while(1) {
     //read sensor data
-    light_sensor_read_lux(&lux);
-    bme280_read_values(&data);
+    light_sensor_read_lux(&api_body.lux);
+    bme280_read_values(&bme280_data);
 
     //read battery v
-    battery_read(&v);
+    battery_read(&api_body.battery_mv);
 
-    //print values
-    printf("battery pin v: %d mV (%.2f V)\n", v, (float)v / 1000.0);
-    printf("lux: %f\n", lux);
-    printf("Pressure: %f\n", data.pressure);
-    printf("Temperature: %f\n", data.temperature);
-    printf("Humidity: %f\n", data.humidity);
-    test_connection();
-    
+    //upload values
+    connected = test_connection();
+    if(connected) {
+      api_body.humidity = bme280_data.humidity;
+      api_body.pressure = bme280_data.pressure;
+      api_body.temperature = bme280_data.temperature;
+      time_get_iso8601(api_body.read_at, TIMESTAMP_STR_LEN);
 
+
+      //print values
+      printf("battery pin v: %d mV (%.2f V)\n", api_body.battery_mv, (float)api_body.battery_mv / 1000.0);
+      printf("lux: %f\n", api_body.lux);
+      printf("Pressure: %f\n", bme280_data.pressure);
+      printf("Temperature: %f\n", bme280_data.temperature);
+      printf("Humidity: %f\n", bme280_data.humidity);
+      printf("TimeStamp: %s\n", api_body.read_at);
+      printf("Mac Adress: %s\n", api_body.mac_addr);
+
+      post_sensor_reading(&api_body);
+    }
 
     //delay
     vTaskDelay(pdMS_TO_TICKS(10000));

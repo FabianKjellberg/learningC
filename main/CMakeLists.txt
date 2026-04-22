@@ -9,6 +9,8 @@ idf_component_register(
         "i2c.c"
         "wifi.c"
         "battery.c"
+        "api.c"
+        "time_helper.c"
     INCLUDE_DIRS 
         "."
     REQUIRES 
@@ -18,4 +20,7 @@ idf_component_register(
         esp_driver_i2c
         esp_adc
         nvs_flash
+        esp_http_client
+        mbedtls
+    EMBED_TXTFILES "certs/worker_ca.pem"
 )

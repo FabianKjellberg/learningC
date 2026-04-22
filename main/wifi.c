@@ -5,6 +5,7 @@
 #include "nvs_flash.h"
 #include "lwip/sockets.h"
 #include "lwip/netdb.h"
+#include "time_helper.h"
 
 static bool has_ip = false;
 
@@ -16,13 +17,13 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t e
     wifi_event_sta_disconnected_t *event = (wifi_event_sta_disconnected_t *) event_data;
     printf("Disconnected, reason=%d\n", event->reason);
 
-    printf("trying to reconnect\n");
     has_ip = false;
     esp_wifi_connect(); 
   }
 
   if(event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-    printf("sta got ip\n");
+    time_sync_init();
+    time_wait_for_sync();
     has_ip = true;
   }
 }
@@ -71,28 +72,32 @@ esp_err_t wifi_connect() {
   return ESP_OK;
 }
 
-void test_connection() {
-    if(!has_ip) return;
+bool test_connection() {
+  if(!has_ip) return false;
     
-    struct sockaddr_in dest_addr;
-    dest_addr.sin_addr.s_addr = inet_addr("142.250.74.14"); //google.com IP
-    dest_addr.sin_family = AF_INET;
-    dest_addr.sin_port = htons(80);
+  bool success = false;
 
-    int sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock < 0) {
-        printf("Socket creation failed\n");
-        return;
-    }
+  struct sockaddr_in dest_addr;
+  dest_addr.sin_addr.s_addr = inet_addr("142.250.74.14"); //google.com IP
+  dest_addr.sin_family = AF_INET;
+  dest_addr.sin_port = htons(80);
 
-    int err = connect(sock, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
-    if (err != 0) {
-        printf("Connection failed\n");
-    } else {
-        printf("Connected to Google!\n");
-    }
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock < 0) {
+    printf("Socket creation failed\n");
+    return false;
+  }
 
-    close(sock);
+  int err = connect(sock, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+  if (err != 0) {
+    success = false;
+  } else {
+    success = true;
+  }
+
+  close(sock);
+
+  return success;
 }
 
 

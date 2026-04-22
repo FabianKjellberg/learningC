@@ -5,6 +5,6 @@
 
 esp_err_t wifi_init(void); 
 esp_err_t wifi_connect(void);
-esp_err_t test_connection(void);
+bool test_connection(void);
 
 #endif
